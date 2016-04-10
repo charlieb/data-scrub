@@ -4,6 +4,7 @@ from itertools import filterfalse, tee
 
 
 class Record(object):
+    # TODO break down batch number into component parts as shown below
     fields = (
             ('name', 20),
             ('dob', 6),
@@ -23,6 +24,7 @@ class Record(object):
         self.gender = gender
         self.cid = str(cid)
         self.delivery_method = 'C'
+        self.completion_date = completion_date
         #                    YMMDD
         #                    |  sponsoring agency code (35)
         #                    |  |  delivery agency code (101)
@@ -83,13 +85,23 @@ def partition(pred, iterable):
     return filterfalse(pred, t1), filter(pred, t2)
 
 def deduplicate(records):
+    rec1, rec2 = tee(records)
     seen_cids = set()
     dupe_cids = set()
 
-    for r in records:
+    for r in rec1:
         if r.cid in seen_cids:
             dupe_cids.add(r.cid)
-    return partition(lambda r: r.cid in dupe_cids, records)
+        else:
+            seen_cids.add(r.cid)
+    
+    return partition(lambda r: r.cid not in dupe_cids, rec2)
+
+def read_records(filename):
+    bad, good = partition(lambda r: r.check(), data_file_reader(filename))
+    dupes, uniqs = deduplicate(good)
+    dupes = sorted(dupes, key=lambda r: r.cid)
+    return list(uniqs), list(bad), list(dupes)
 
 if __name__ == '__main__':
     r = Record(name = 'Charlie Burrows',
@@ -104,8 +116,6 @@ if __name__ == '__main__':
     r2 = Record()
     r2.read(string)
     print(r2.short_repr())
-    bad, good = partition(lambda r: r.check(), data_file_reader('SAMPLE DATA.txt'))
-    dupes, uniqs = deduplicate(good)
-    dupes = sorted(dupes, key=lambda r: r.cid)
-        
+    u,b,d = read_records('SAMPLE DATA.txt')
+    print(str(len(list(u))), str(len(list(b))), str(len(list(d))))
 
