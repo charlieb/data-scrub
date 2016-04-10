@@ -193,6 +193,7 @@ class Scrub(tk.Frame):
         self.selected_record['rec'].check()
         self.selected_record['lb'].delete(tk.ACTIVE)
         self.selected_record['lb'].insert(tk.ACTIVE, self.selected_record['rec'].short_repr())
+        self.selected_record['lb'].select_set(tk.ACTIVE)
         
 
 
