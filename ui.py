@@ -30,6 +30,7 @@ class Scrub(tk.Frame):
 
         save = tk.Button(fr_editbar, text='Commit')
         save.pack(side=tk.RIGHT)
+        save.bind("<Button-1>", self.commit)
 
 
     def _button_bar(self):
@@ -134,7 +135,6 @@ class Scrub(tk.Frame):
         # bind listbox click
         self.lb_duplicate.bind("<<ListboxSelect>>", self.select_duplicate_record)
 
-
     def refresh(self):
         listboxes_and_records = [
                 (self.lb_main, self.good),
@@ -173,6 +173,8 @@ class Scrub(tk.Frame):
             tb.delete(0, tk.END)
             tb.insert(0, data)
 
+        self.selected_record = {'lb':listbox, 'rec':record}
+
     def select_main_record(self, event):
         self.fill_edit_boxes(self.lb_main, self.good)
 
@@ -181,6 +183,18 @@ class Scrub(tk.Frame):
 
     def select_duplicate_record(self, event):
         self.fill_edit_boxes(self.lb_duplicate, self.dupes)
+
+    def commit(self, event):
+        cols = [r[0] for r in Record.fields if r[0][0] != '<']
+        for name in cols:
+            tb = getattr(self, 'tb_' + name)
+            setattr(self.selected_record['rec'], name, tb.get())
+
+        self.selected_record['rec'].check()
+        self.selected_record['lb'].delete(tk.ACTIVE)
+        self.selected_record['lb'].insert(tk.ACTIVE, self.selected_record['rec'].short_repr())
+        
+
 
 top = Scrub()
 top.mainloop()

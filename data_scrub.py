@@ -1,5 +1,5 @@
 from datetime import date
-from string import ascii_letters
+from string import ascii_letters, digits
 from itertools import filterfalse, tee
 
 
@@ -35,7 +35,7 @@ class Record(object):
     def __repr__(self):
         return ''.join([(name[1]*width if name[0] == '<' else getattr(self,name)).ljust(width) for name,width in self.fields])
     def short_repr(self):
-        return ' '.join([getattr(self,name).ljust(width) for name,width in self.fields if name[0] != '<'])
+        return ' '.join([getattr(self,name).ljust(width) for name,width in self.fields if name[0] != '<']) + ' ' + self.failure_reason
     def read(self, string):
         string = string.strip()
         self.record = string
@@ -46,26 +46,28 @@ class Record(object):
             pos += width
     def check(self):
         self.passed = True
+        self.failure_reason = ''
 
         if len(self.record) != 76: # should be 80 but source data is already stripped of the last 4 spaces
             self.passed = False
-            self.failure_reason += 'Whole record is too short.'
+            self.failure_reason = 'Whole record is too short.'
         # Person's name rules
         if not all(letter in ascii_letters+',.\'- ' for letter in self.name):
             self.passed = False
-            self.failure_reason += ' Student name has strange characters.'
-
+            self.failure_reason = 'Student name has strange characters.'
         # CID : License Number rules
-        if len(self.cid) < 9:
+        elif len(self.cid) < 9:
             self.passed = False
-            self.failure_reason += 'CID (license number) is too short.'
-        if self.cid.startswith(tuple(ascii_letters)):
+            self.failure_reason = 'CID is too short.'
+        elif self.cid.startswith(tuple(ascii_letters)):
             self.passed = False
-            self.failure_reason += ' CID (license number) starts with a letter.'
-        if self.cid.endswith(tuple(ascii_letters)):
+            self.failure_reason = 'CID starts with a letter.'
+        elif self.cid.endswith(tuple(ascii_letters)):
             self.passed = False
-            self.failure_reason += ' CID (license number) ends with a letter.'
-
+            self.failure_reason = 'CID ends with a letter.'
+        elif not all(digit in digits for digit in self.cid): 
+            self.passed = False
+            self.failure_reason = 'CID not all numbers.'
 
         return self.passed
 
