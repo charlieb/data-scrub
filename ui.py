@@ -1,6 +1,7 @@
 import tkinter as tk
 import tkinter.filedialog as filedialog
-from data_scrub import Record, read_records
+import tkinter.messagebox as messagebox
+from data_scrub import Record, read_records, check_records
 
 class Scrub(tk.Frame):
     def __init__(self):
@@ -42,6 +43,10 @@ class Scrub(tk.Frame):
         open.bind("<Button-1>", self.open_cb)
         open.pack(side=tk.LEFT)
         
+        recheck = tk.Button(buttonbar, text="Recheck")
+        recheck.bind("<Button-1>", self.recheck_cb)
+        recheck.pack(side=tk.LEFT)
+
         save = tk.Button(buttonbar, text="Save")
         save.bind("<Button-1>", self.save_cb)
         save.pack(side=tk.LEFT)
@@ -154,6 +159,10 @@ class Scrub(tk.Frame):
         print(str(len(self.good)), str(len(self.bad)), str(len(self.dupes)))
         self.refresh()
 
+    def recheck_cb(self, event):
+        self.good, self.bad, self.dupes = check_records(self.good + self.bad + self.dupes)
+        self.refresh()
+
     def save_cb(self, event):
         print("Save")
 
@@ -161,11 +170,24 @@ class Scrub(tk.Frame):
         self.quit()
 
     def move_selected_duplicate(self, event):
-        pass
+        recnum = self.lb_duplicate.curselection()[0]
+        record = self.dupes[recnum]
+        self.good.insert(0, record)
+        self.dupes.remove(record)
+        self.refresh()
+
     def move_selected_suspect(self, event):
-        pass
+        recnum = self.lb_suspect.curselection()[0]
+        record = self.bad[recnum]
+        if not record.check():
+            if not messagebox.askyesno('Move Invaid Record?',
+                    'This record failed validation\nAre you sure you want to move it?'):
+                return
+        self.good.insert(0, record)
+        self.bad.remove(record)
+        self.refresh()
+        
     def fill_edit_boxes(self, listbox, records):
-        print('fill_edit_boxes')
         recnum = listbox.curselection()[0]
         record = records[recnum] 
 
@@ -200,7 +222,6 @@ class Scrub(tk.Frame):
         self.selected_record['lb'].insert(self.selected_record['#'], self.selected_record['rec'].short_repr())
         self.selected_record['lb'].select_set(self.selected_record['#'])
         self.selected_record['lb'].event_generate('<<ListboxSelect>>')
-        print(self.selected_record['#'])
         
 
 

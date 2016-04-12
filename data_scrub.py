@@ -39,7 +39,7 @@ class Record(object):
         return ' '.join([getattr(self,name).ljust(width)[0:width] 
                         for name,width in self.fields if name[0] != '<']) + ' ' + self.failure_reason
     def reconstruct(self):
-        self.record = str(self)
+        self.record = str(self).strip()
     def read(self, string):
         string = string.strip()
         self.record = string
@@ -72,6 +72,15 @@ class Record(object):
         elif not all(digit in digits for digit in self.cid): 
             self.passed = False
             self.failure_reason = 'CID not all numbers.'
+        elif not all(digit in digits for digit in self.batch_number):
+            self.passed = False
+            self.failure_reason = 'Batch Number not all numbers.'
+        elif not all(digit in digits for digit in self.dob):
+            self.passed = False
+            self.failure_reason = 'Date of Birth not all numbers.'
+        elif self.gender not in ('M', 'F'):
+            self.passed = False
+            self.failure_reason = 'Gender not M or F'
 
         return self.passed
 
@@ -103,11 +112,14 @@ def deduplicate(records):
     
     return partition(lambda r: r.cid not in dupe_cids, rec2)
 
-def read_records(filename):
-    bad, good = partition(lambda r: r.check(), data_file_reader(filename))
+def check_records(records):
+    bad, good = partition(lambda r: r.check(), records)
     dupes, uniqs = deduplicate(good)
     dupes = sorted(dupes, key=lambda r: r.cid)
     return list(uniqs), list(bad), list(dupes)
+
+def read_records(filename):
+    return check_records(data_file_reader(filename))
 
 if __name__ == '__main__':
     r = Record(name = 'Charlie Burrows',
