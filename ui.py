@@ -6,6 +6,7 @@ class Scrub(tk.Frame):
     def __init__(self):
         super().__init__()
         self.option_add("*Listbox.Font", "courier")
+        self.option_add("*Entry.Font", "courier")
         self.pack(expand=True, fill='both')
         self._edit_bar()
         self._listboxes()
@@ -164,7 +165,9 @@ class Scrub(tk.Frame):
     def move_selected_suspect(self, event):
         pass
     def fill_edit_boxes(self, listbox, records):
-        record = records[listbox.curselection()[0]] 
+        print('fill_edit_boxes')
+        recnum = listbox.curselection()[0]
+        record = records[recnum] 
 
         cols = [r[0] for r in Record.fields if r[0][0] != '<']
         for name in cols:
@@ -173,7 +176,7 @@ class Scrub(tk.Frame):
             tb.delete(0, tk.END)
             tb.insert(0, data)
 
-        self.selected_record = {'lb':listbox, 'rec':record}
+        self.selected_record = {'lb':listbox, 'rec':record, '#':recnum}
 
     def select_main_record(self, event):
         self.fill_edit_boxes(self.lb_main, self.good)
@@ -190,10 +193,14 @@ class Scrub(tk.Frame):
             tb = getattr(self, 'tb_' + name)
             setattr(self.selected_record['rec'], name, tb.get())
 
+        self.selected_record['rec'].reconstruct()
         self.selected_record['rec'].check()
-        self.selected_record['lb'].delete(tk.ACTIVE)
-        self.selected_record['lb'].insert(tk.ACTIVE, self.selected_record['rec'].short_repr())
-        self.selected_record['lb'].select_set(tk.ACTIVE)
+
+        self.selected_record['lb'].delete(self.selected_record['#'])
+        self.selected_record['lb'].insert(self.selected_record['#'], self.selected_record['rec'].short_repr())
+        self.selected_record['lb'].select_set(self.selected_record['#'])
+        self.selected_record['lb'].event_generate('<<ListboxSelect>>')
+        print(self.selected_record['#'])
         
 
 

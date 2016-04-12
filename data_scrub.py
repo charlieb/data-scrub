@@ -33,9 +33,13 @@ class Record(object):
         self.failure_reason = ''
         self.passed = False
     def __repr__(self):
-        return ''.join([(name[1]*width if name[0] == '<' else getattr(self,name)).ljust(width) for name,width in self.fields])
+        return ''.join([(name[1]*width if name[0] == '<' else getattr(self,name)).ljust(width)[0:width]
+                        for name,width in self.fields])
     def short_repr(self):
-        return ' '.join([getattr(self,name).ljust(width) for name,width in self.fields if name[0] != '<']) + ' ' + self.failure_reason
+        return ' '.join([getattr(self,name).ljust(width)[0:width] 
+                        for name,width in self.fields if name[0] != '<']) + ' ' + self.failure_reason
+    def reconstruct(self):
+        self.record = str(self)
     def read(self, string):
         string = string.strip()
         self.record = string
