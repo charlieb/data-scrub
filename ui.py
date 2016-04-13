@@ -1,7 +1,8 @@
 import tkinter as tk
 import tkinter.filedialog as filedialog
 import tkinter.messagebox as messagebox
-from data_scrub import Record, read_records, check_records
+from datetime import date
+from data_scrub import Record, read_records, check_records, write_records
 
 class Scrub(tk.Frame):
     def __init__(self):
@@ -153,8 +154,9 @@ class Scrub(tk.Frame):
 
     def open_cb(self, event):
         filename = filedialog.askopenfilename(initialdir='.', 
-                filetypes=(('Text File', '*.txt'), ('All Files', '*.*')),
+                filetypes=(('Text File', '*.txt'), ('CMP File', '*.cmp'), ('All Files', '*.*')),
                 title='Choose File to Open')
+        if filename is None: return
         self.good, self.bad, self.dupes = read_records(filename)
         print(str(len(self.good)), str(len(self.bad)), str(len(self.dupes)))
         self.refresh()
@@ -164,7 +166,13 @@ class Scrub(tk.Frame):
         self.refresh()
 
     def save_cb(self, event):
-        print("Save")
+        cmpfilename = '%2s%5s01.CMP'%(Record.sponsoring_agency, date.today().strftime('%y%m%d')[1:])
+        filename = filedialog.asksaveasfilename(initialdir='.', 
+                filetypes=(('CMP File', '*.CMP'), ('All Files', '*.*')),
+                title='Save As',
+                initialfile=cmpfilename)
+        if filename is None: return
+        write_records(filename, self.good)
 
     def quit_cb(self, event):
         self.quit()

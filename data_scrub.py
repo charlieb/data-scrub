@@ -17,6 +17,7 @@ class Record(object):
             ('delivery_method', 1),
             ('< >', 4),
             )
+    sponsoring_agency = 35 # DDD's sponsor code
 
     def __init__(self, name='', dob=date(1970,1,1), gender='M', completion_date=date(1970,1,1), cid=''):
         self.name = name
@@ -28,7 +29,7 @@ class Record(object):
         #                    YMMDD
         #                    |  sponsoring agency code (35)
         #                    |  |  delivery agency code (101)
-        self.batch_number = '%5s%2s%3s'%(completion_date.strftime('%y%m%d')[1:], 35, 101)
+        self.batch_number = '%5s%2s%3s'%(completion_date.strftime('%y%m%d')[1:], self.sponsoring_agency, 101)
         self.record = ''
         self.failure_reason = ''
         self.passed = False
@@ -120,6 +121,10 @@ def check_records(records):
 
 def read_records(filename):
     return check_records(data_file_reader(filename))
+def write_records(filename, records):
+    with open(filename, 'w') as f:
+        for r in records:
+            print(r, file=f)
 
 if __name__ == '__main__':
     r = Record(name = 'Charlie Burrows',
