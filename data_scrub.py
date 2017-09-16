@@ -10,7 +10,10 @@ class Record(object):
             ('dob', 6),
             ('gender', 1),
             ('< >', 22),
-            ('batch_number', 10),
+            #('batch_number', 10),
+            ('batch_date', 5),
+            ('batch_sponsor', 2),
+            ('batch_agency', 3),
             ('<0>', 2),
             ('< >', 5),
             ('cid', 9),
@@ -26,10 +29,13 @@ class Record(object):
         self.cid = str(cid)
         self.delivery_method = 'C'
         self.completion_date = completion_date
-        #                    YMMDD
-        #                    |  sponsoring agency code (35)
-        #                    |  |  delivery agency code (101)
-        self.batch_number = '%5s%2s%3s'%(completion_date.strftime('%y%m%d')[1:], self.sponsoring_agency, 101)
+        #                     YMMDD
+        #                     |  sponsoring agency code (35)
+        #                     |  |  delivery agency code (101)
+        #self.batch_number = '%5s%2s%3s'%(completion_date.strftime('%y%m%d')[1:], self.sponsoring_agency, 101)
+        self.batch_date = completion_date.strftime('%y%m%d')[1:]
+        self.batch_sponsor = '%2s'%self.sponsoring_agency
+        self.batch_agency = '%3s'%101
         self.record = ''
         self.failure_reason = ''
         self.passed = False
@@ -73,9 +79,15 @@ class Record(object):
         elif not all(digit in digits for digit in self.cid): 
             self.passed = False
             self.failure_reason = 'CID not all numbers.'
-        elif not all(digit in digits for digit in self.batch_number):
+        elif not all(digit in digits for digit in self.batch_date):
             self.passed = False
-            self.failure_reason = 'Batch Number not all numbers.'
+            self.failure_reason = 'Batch Date not all numbers.'
+        elif not (all(digit in digits for digit in self.batch_agency[1:]) and (self.batch_agency[0] in digits or self.batch_agency[0] == 'A')) :
+            self.passed = False
+            self.failure_reason = 'Batch Agency not all numbers or doesn\'t start with A.'
+        elif self.batch_sponsor != '35':
+            self.passed = False
+            self.failure_reason = 'Batch Sponsor should be 35.'
         elif not all(digit in digits for digit in self.dob):
             self.passed = False
             self.failure_reason = 'Date of Birth not all numbers.'
