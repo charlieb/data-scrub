@@ -82,9 +82,9 @@ class Record(object):
         elif not all(digit in digits for digit in self.batch_date):
             self.passed = False
             self.failure_reason = 'Batch Date not all numbers.'
-        elif not (all(digit in digits for digit in self.batch_agency[1:]) and (self.batch_agency[0] in digits or self.batch_agency[0] == 'A')) :
+        elif not (all(digit in digits for digit in self.batch_agency[1:]) and (self.batch_agency[0] in digits or self.batch_agency[0] in ['A', 'B'])) :
             self.passed = False
-            self.failure_reason = 'Batch Agency not all numbers or doesn\'t start with A.'
+            self.failure_reason = 'Batch Agency not all numbers or doesn\'t start with A or B.'
         elif self.batch_sponsor != '35':
             self.passed = False
             self.failure_reason = 'Batch Sponsor should be 35.'
