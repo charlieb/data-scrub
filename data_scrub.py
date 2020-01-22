@@ -66,6 +66,9 @@ class Record(object):
         if not all(letter in ascii_letters+',.\'- ' for letter in self.name):
             self.passed = False
             self.failure_reason = 'Student name has strange characters.'
+        elif self.name.count(',') >= 3:
+            self.passed = False
+            self.failure_reason = 'Student name has too many parts.'
         # CID : License Number rules
         elif len(self.cid) < 9:
             self.passed = False
@@ -82,7 +85,7 @@ class Record(object):
         elif not all(digit in digits for digit in self.batch_date):
             self.passed = False
             self.failure_reason = 'Batch Date not all numbers.'
-        elif not (all(digit in digits for digit in self.batch_agency[1:]) and (self.batch_agency[0] in digits or self.batch_agency[0] in ['A', 'B'])) :
+        elif not (all(digit in digits for digit in self.batch_agency[1:]) and (self.batch_agency[0] in digits or self.batch_agency[0] in ['A', 'B', 'C'])) :
             self.passed = False
             self.failure_reason = 'Batch Agency not all numbers or doesn\'t start with A or B.'
         elif self.batch_sponsor != '35':
